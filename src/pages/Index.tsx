@@ -3,31 +3,110 @@ import { useState } from "react";
 import SearchForm from "@/components/SearchForm";
 import FlightResults from "@/components/FlightResults";
 import FilterSidebar from "@/components/FilterSidebar";
+import CredentialsModal from "@/components/CredentialsModal";
 import { Flight, SearchFilters } from "@/types/flight";
-import { searchFlights } from "@/utils/mockFlightData";
-import { Plane } from "lucide-react";
+import { amadeusAPI, AmadeusCredentials } from "@/services/amadeusApi";
+import { transformAmadeusToFlights } from "@/utils/amadeusTransformer";
+import { Plane, Settings } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
   const [flights, setFlights] = useState<Flight[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  const [showCredentialsModal, setShowCredentialsModal] = useState(false);
+  const [credentials, setCredentials] = useState<AmadeusCredentials | null>(() => {
+    const saved = localStorage.getItem('amadeus_credentials');
+    return saved ? JSON.parse(saved) : null;
+  });
   const [filters, setFilters] = useState<SearchFilters>({
     maxPrice: 2000,
     airlines: [],
     maxStops: 3,
     maxDuration: 24
   });
+  const { toast } = useToast();
+
+  const handleCredentialsSave = (newCredentials: AmadeusCredentials) => {
+    setCredentials(newCredentials);
+    localStorage.setItem('amadeus_credentials', JSON.stringify(newCredentials));
+    toast({
+      title: "Credentials saved",
+      description: "Your Amadeus API credentials have been saved locally.",
+    });
+  };
+
+  const getAirportCode = (cityName: string): string => {
+    const cityToCode: Record<string, string> = {
+      'new york': 'JFK',
+      'los angeles': 'LAX',
+      'london': 'LHR',
+      'paris': 'CDG',
+      'dubai': 'DXB',
+      'tokyo': 'NRT',
+      'sydney': 'SYD',
+      'singapore': 'SIN',
+      'frankfurt': 'FRA',
+      'amsterdam': 'AMS',
+      'mumbai': 'BOM',
+      'delhi': 'DEL',
+    };
+    
+    const normalized = cityName.toLowerCase().trim();
+    return cityToCode[normalized] || cityName.toUpperCase().slice(0, 3);
+  };
 
   const handleSearch = async (searchData: any) => {
+    if (!credentials) {
+      setShowCredentialsModal(true);
+      toast({
+        title: "API Credentials Required",
+        description: "Please enter your Amadeus API credentials to search flights.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSearching(true);
     setHasSearched(true);
     
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    const results = searchFlights(searchData);
-    setFlights(results);
-    setIsSearching(false);
+    try {
+      const originCode = getAirportCode(searchData.origin);
+      const destinationCode = getAirportCode(searchData.destination);
+      
+      const searchParams = {
+        originLocationCode: originCode,
+        destinationLocationCode: destinationCode,
+        departureDate: new Date(searchData.departureDate).toISOString().split('T')[0],
+        returnDate: searchData.returnDate ? new Date(searchData.returnDate).toISOString().split('T')[0] : undefined,
+        adults: searchData.passengers || 1,
+        travelClass: searchData.class?.toUpperCase(),
+        max: 20
+      };
+
+      console.log('Searching flights with params:', searchParams);
+      
+      const amadeusResponse = await amadeusAPI.searchFlights(searchParams, credentials);
+      const transformedFlights = transformAmadeusToFlights(amadeusResponse);
+      
+      setFlights(transformedFlights);
+      
+      toast({
+        title: "Flights found!",
+        description: `Found ${transformedFlights.length} flights for your search.`,
+      });
+    } catch (error) {
+      console.error('Flight search error:', error);
+      toast({
+        title: "Search failed",
+        description: error instanceof Error ? error.message : "Failed to search flights. Please check your API credentials.",
+        variant: "destructive",
+      });
+      setFlights([]);
+    } finally {
+      setIsSearching(false);
+    }
   };
 
   const filteredFlights = flights.filter(flight => {
@@ -44,13 +123,25 @@ const Index = () => {
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-md border-b border-blue-100 sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-600 rounded-lg">
-              <Plane className="w-6 h-6 text-white" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-blue-600 rounded-lg">
+                <Plane className="w-6 h-6 text-white" />
+              </div>
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-sky-600 bg-clip-text text-transparent">
+                JetSet Navigator
+              </h1>
             </div>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-sky-600 bg-clip-text text-transparent">
-              JetSet Navigator
-            </h1>
+            
+            <Button
+              variant="outline"
+              onClick={() => setShowCredentialsModal(true)}
+              className="flex items-center gap-2"
+            >
+              <Settings className="w-4 h-4" />
+              API Settings
+              {credentials && <span className="w-2 h-2 bg-green-500 rounded-full"></span>}
+            </Button>
           </div>
         </div>
       </header>
@@ -62,7 +153,7 @@ const Index = () => {
             Find Your Perfect Flight
           </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Search millions of flights and compare prices from hundreds of airlines to get the best deals
+            Search real-time flights using Amadeus API and compare prices from hundreds of airlines
           </p>
         </div>
 
@@ -97,6 +188,14 @@ const Index = () => {
           </div>
         </section>
       )}
+
+      {/* Credentials Modal */}
+      <CredentialsModal
+        isOpen={showCredentialsModal}
+        onClose={() => setShowCredentialsModal(false)}
+        onSave={handleCredentialsSave}
+        currentCredentials={credentials || undefined}
+      />
     </div>
   );
 };
