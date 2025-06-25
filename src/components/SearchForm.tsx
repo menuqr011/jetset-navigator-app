@@ -1,15 +1,15 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Card } from "@/components/ui/card";
-import { CalendarIcon, Search, Users, Plane } from "lucide-react";
+import { CalendarIcon, Search, Users } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import AirportAutocomplete from "./AirportAutocomplete";
 
 interface SearchFormProps {
   onSearch: (data: any) => void;
@@ -107,34 +107,26 @@ const SearchForm = ({ onSearch, isSearching }: SearchFormProps) => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Origin */}
           <div className="space-y-2">
-            <Label htmlFor="origin" className="text-sm font-medium text-gray-700">From</Label>
-            <div className="relative">
-              <Plane className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
-              <Input
-                id="origin"
-                placeholder="Origin city"
-                value={origin}
-                onChange={(e) => setOrigin(e.target.value)}
-                className="pl-10"
-                required
-              />
-            </div>
+            <AirportAutocomplete
+              label="From"
+              placeholder="Origin city"
+              value={origin}
+              onChange={setOrigin}
+              icon="origin"
+              required
+            />
           </div>
 
           {/* Destination */}
           <div className="space-y-2">
-            <Label htmlFor="destination" className="text-sm font-medium text-gray-700">To</Label>
-            <div className="relative">
-              <Plane className="absolute left-3 top-3 w-4 h-4 text-gray-400 rotate-90" />
-              <Input
-                id="destination"
-                placeholder="Destination city"
-                value={destination}
-                onChange={(e) => setDestination(e.target.value)}
-                className="pl-10"
-                required
-              />
-            </div>
+            <AirportAutocomplete
+              label="To"
+              placeholder="Destination city"
+              value={destination}
+              onChange={setDestination}
+              icon="destination"
+              required
+            />
           </div>
 
           {/* Departure Date */}
