@@ -26,6 +26,9 @@ export interface SearchFilters {
   airlines: string[];
   maxStops: number;
   maxDuration: number;
+  departureTimeRanges?: string[];
+  travelClasses?: string[];
+  directFlightsOnly?: boolean;
 }
 
 export interface SearchData {

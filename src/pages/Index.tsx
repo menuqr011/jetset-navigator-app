@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import SearchForm from "@/components/SearchForm";
 import FlightResults from "@/components/FlightResults";
@@ -24,7 +23,10 @@ const Index = () => {
     maxPrice: 2000,
     airlines: [],
     maxStops: 3,
-    maxDuration: 24
+    maxDuration: 24,
+    departureTimeRanges: [],
+    travelClasses: [],
+    directFlightsOnly: false
   });
   const { toast } = useToast();
 
@@ -110,12 +112,40 @@ const Index = () => {
   };
 
   const filteredFlights = flights.filter(flight => {
-    return (
-      flight.price <= filters.maxPrice &&
-      (filters.airlines.length === 0 || filters.airlines.includes(flight.airline)) &&
-      flight.stops <= filters.maxStops &&
-      flight.duration <= filters.maxDuration
-    );
+    // Price filter
+    if (flight.price > filters.maxPrice) return false;
+    
+    // Airline filter
+    if (filters.airlines.length > 0 && !filters.airlines.includes(flight.airline)) return false;
+    
+    // Stops filter
+    if (flight.stops > filters.maxStops) return false;
+    
+    // Duration filter
+    if (flight.duration > filters.maxDuration) return false;
+    
+    // Direct flights only filter
+    if (filters.directFlightsOnly && flight.stops > 0) return false;
+    
+    // Travel class filter
+    if (filters.travelClasses && filters.travelClasses.length > 0 && !filters.travelClasses.includes(flight.class)) return false;
+    
+    // Departure time range filter
+    if (filters.departureTimeRanges && filters.departureTimeRanges.length > 0) {
+      const departureHour = new Date(`2000-01-01T${flight.departureTime}`).getHours();
+      const matchesTimeRange = filters.departureTimeRanges.some(range => {
+        switch (range) {
+          case 'early': return departureHour >= 6 && departureHour < 12;
+          case 'afternoon': return departureHour >= 12 && departureHour < 18;
+          case 'evening': return departureHour >= 18 && departureHour < 24;
+          case 'night': return departureHour >= 0 && departureHour < 6;
+          default: return true;
+        }
+      });
+      if (!matchesTimeRange) return false;
+    }
+    
+    return true;
   });
 
   return (

@@ -8,7 +8,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { Filter, RotateCcw } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Filter, RotateCcw, ChevronDown, Clock, Plane, DollarSign, Users } from "lucide-react";
 
 interface FilterSidebarProps {
   filters: SearchFilters;
@@ -17,14 +20,52 @@ interface FilterSidebarProps {
 }
 
 const FilterSidebar = ({ filters, onFiltersChange, flights }: FilterSidebarProps) => {
-  // Get unique airlines from flights
-  const airlines = Array.from(new Set(flights.map(f => f.airline))).sort();
-  
+  const [openSections, setOpenSections] = useState({
+    price: true,
+    airlines: true,
+    stops: true,
+    duration: true,
+    departure: false,
+    class: false
+  });
+
+  // Get unique airlines with flight counts and price ranges
+  const airlinesData = Array.from(new Set(flights.map(f => f.airline)))
+    .map(airline => {
+      const airlineFlights = flights.filter(f => f.airline === airline);
+      return {
+        name: airline,
+        count: airlineFlights.length,
+        minPrice: Math.min(...airlineFlights.map(f => f.price)),
+        code: airlineFlights[0]?.airlineCode || airline.slice(0, 2).toUpperCase()
+      };
+    })
+    .sort((a, b) => a.minPrice - b.minPrice);
+
   // Get price range from flights
   const priceRange = flights.length > 0 ? {
     min: Math.min(...flights.map(f => f.price)),
     max: Math.max(...flights.map(f => f.price))
   } : { min: 0, max: 2000 };
+
+  // Get departure time ranges
+  const departureTimeRanges = [
+    { label: "Early Morning", value: "early", time: "6:00 AM - 12:00 PM", icon: "🌅" },
+    { label: "Afternoon", value: "afternoon", time: "12:00 PM - 6:00 PM", icon: "☀️" },
+    { label: "Evening", value: "evening", time: "6:00 PM - 12:00 AM", icon: "🌆" },
+    { label: "Night", value: "night", time: "12:00 AM - 6:00 AM", icon: "🌙" }
+  ];
+
+  const travelClasses = [
+    { label: "Economy", value: "economy", icon: "💺" },
+    { label: "Premium Economy", value: "premium", icon: "🎫" },
+    { label: "Business", value: "business", icon: "💼" },
+    { label: "First Class", value: "first", icon: "👑" }
+  ];
+
+  const toggleSection = (section: keyof typeof openSections) => {
+    setOpenSections(prev => ({ ...prev, [section]: !prev[section] }));
+  };
 
   const handlePriceChange = (value: number[]) => {
     onFiltersChange({ ...filters, maxPrice: value[0] });
@@ -60,6 +101,40 @@ const FilterSidebar = ({ filters, onFiltersChange, flights }: FilterSidebarProps
     (filters.maxStops < 3 ? 1 : 0) +
     (filters.maxDuration < 24 ? 1 : 0);
 
+  const FilterSection = ({ 
+    title, 
+    icon, 
+    isOpen, 
+    onToggle, 
+    children, 
+    activeCount 
+  }: { 
+    title: string; 
+    icon: React.ReactNode; 
+    isOpen: boolean; 
+    onToggle: () => void; 
+    children: React.ReactNode;
+    activeCount?: number;
+  }) => (
+    <Collapsible open={isOpen} onOpenChange={onToggle}>
+      <CollapsibleTrigger className="flex items-center justify-between w-full p-3 hover:bg-gray-50 rounded-lg transition-colors">
+        <div className="flex items-center gap-2">
+          {icon}
+          <span className="font-medium text-gray-700">{title}</span>
+          {activeCount && activeCount > 0 && (
+            <Badge variant="secondary" className="text-xs">
+              {activeCount}
+            </Badge>
+          )}
+        </div>
+        <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+      </CollapsibleTrigger>
+      <CollapsibleContent className="px-3 pb-3">
+        {children}
+      </CollapsibleContent>
+    </Collapsible>
+  );
+
   return (
     <Card className="p-6 h-fit sticky top-24">
       <div className="flex items-center justify-between mb-6">
@@ -85,13 +160,16 @@ const FilterSidebar = ({ filters, onFiltersChange, flights }: FilterSidebarProps
         )}
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-2">
         {/* Price Range */}
-        <div className="space-y-3">
-          <Label className="text-sm font-medium text-gray-700">
-            Price Range
-          </Label>
-          <div className="px-2">
+        <FilterSection
+          title="Price Range"
+          icon={<DollarSign className="w-4 h-4 text-green-600" />}
+          isOpen={openSections.price}
+          onToggle={() => toggleSection('price')}
+          activeCount={filters.maxPrice < priceRange.max ? 1 : 0}
+        >
+          <div className="space-y-4 pt-2">
             <Slider
               value={[filters.maxPrice]}
               onValueChange={handlePriceChange}
@@ -100,7 +178,7 @@ const FilterSidebar = ({ filters, onFiltersChange, flights }: FilterSidebarProps
               step={50}
               className="w-full"
             />
-            <div className="flex justify-between text-sm text-gray-500 mt-2">
+            <div className="flex justify-between text-sm text-gray-500">
               <span>${priceRange.min.toLocaleString()}</span>
               <span className="font-medium text-blue-600">
                 Up to ${filters.maxPrice.toLocaleString()}
@@ -108,58 +186,69 @@ const FilterSidebar = ({ filters, onFiltersChange, flights }: FilterSidebarProps
               <span>${priceRange.max.toLocaleString()}</span>
             </div>
           </div>
-        </div>
+        </FilterSection>
 
         <Separator />
 
         {/* Airlines */}
-        {airlines.length > 0 && (
+        {airlinesData.length > 0 && (
           <>
-            <div className="space-y-3">
-              <Label className="text-sm font-medium text-gray-700">
-                Airlines
-              </Label>
-              <div className="space-y-3 max-h-48 overflow-y-auto">
-                {airlines.map((airline) => {
-                  const airlineFlights = flights.filter(f => f.airline === airline);
-                  const minPrice = Math.min(...airlineFlights.map(f => f.price));
-                  
-                  return (
-                    <div key={airline} className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <Checkbox
-                          id={airline}
-                          checked={filters.airlines.includes(airline)}
-                          onCheckedChange={(checked) => 
-                            handleAirlineChange(airline, checked as boolean)
-                          }
-                        />
+            <FilterSection
+              title="Airlines"
+              icon={<Plane className="w-4 h-4 text-blue-600" />}
+              isOpen={openSections.airlines}
+              onToggle={() => toggleSection('airlines')}
+              activeCount={filters.airlines.length}
+            >
+              <div className="space-y-3 pt-2 max-h-48 overflow-y-auto">
+                {airlinesData.map((airline) => (
+                  <div key={airline.name} className="flex items-center justify-between group hover:bg-gray-50 p-2 rounded">
+                    <div className="flex items-center space-x-3">
+                      <Checkbox
+                        id={airline.name}
+                        checked={filters.airlines.includes(airline.name)}
+                        onCheckedChange={(checked) => 
+                          handleAirlineChange(airline.name, checked as boolean)
+                        }
+                      />
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 bg-blue-100 rounded flex items-center justify-center text-xs font-bold text-blue-600">
+                          {airline.code}
+                        </div>
                         <Label 
-                          htmlFor={airline} 
+                          htmlFor={airline.name} 
                           className="text-sm font-normal cursor-pointer"
                         >
-                          {airline}
+                          {airline.name}
                         </Label>
                       </div>
-                      <span className="text-xs text-gray-500">
-                        from ${minPrice.toLocaleString()}
-                      </span>
                     </div>
-                  );
-                })}
+                    <div className="text-right">
+                      <div className="text-xs text-gray-500">
+                        {airline.count} flight{airline.count !== 1 ? 's' : ''}
+                      </div>
+                      <div className="text-xs font-medium text-green-600">
+                        from ${airline.minPrice.toLocaleString()}
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
-            </div>
+            </FilterSection>
 
             <Separator />
           </>
         )}
 
         {/* Stops */}
-        <div className="space-y-3">
-          <Label className="text-sm font-medium text-gray-700">
-            Maximum Stops
-          </Label>
-          <div className="px-2">
+        <FilterSection
+          title="Stops"
+          icon={<Users className="w-4 h-4 text-purple-600" />}
+          isOpen={openSections.stops}
+          onToggle={() => toggleSection('stops')}
+          activeCount={filters.maxStops < 3 ? 1 : 0}
+        >
+          <div className="space-y-4 pt-2">
             <Slider
               value={[filters.maxStops]}
               onValueChange={handleStopsChange}
@@ -168,7 +257,7 @@ const FilterSidebar = ({ filters, onFiltersChange, flights }: FilterSidebarProps
               step={1}
               className="w-full"
             />
-            <div className="flex justify-between text-sm text-gray-500 mt-2">
+            <div className="flex justify-between text-sm text-gray-500">
               <span>Direct</span>
               <span className="font-medium text-blue-600">
                 {filters.maxStops === 0 ? 'Direct only' : 
@@ -177,17 +266,33 @@ const FilterSidebar = ({ filters, onFiltersChange, flights }: FilterSidebarProps
               </span>
               <span>3+ stops</span>
             </div>
+            <div className="grid grid-cols-2 gap-2 pt-2">
+              {[0, 1, 2, 3].map((stops) => (
+                <Button
+                  key={stops}
+                  variant={filters.maxStops >= stops ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => handleStopsChange([stops])}
+                  className="text-xs"
+                >
+                  {stops === 0 ? 'Direct' : stops === 3 ? '3+ stops' : `${stops} stop${stops > 1 ? 's' : ''}`}
+                </Button>
+              ))}
+            </div>
           </div>
-        </div>
+        </FilterSection>
 
         <Separator />
 
         {/* Duration */}
-        <div className="space-y-3">
-          <Label className="text-sm font-medium text-gray-700">
-            Maximum Duration
-          </Label>
-          <div className="px-2">
+        <FilterSection
+          title="Flight Duration"
+          icon={<Clock className="w-4 h-4 text-orange-600" />}
+          isOpen={openSections.duration}
+          onToggle={() => toggleSection('duration')}
+          activeCount={filters.maxDuration < 24 ? 1 : 0}
+        >
+          <div className="space-y-4 pt-2">
             <Slider
               value={[filters.maxDuration]}
               onValueChange={handleDurationChange}
@@ -196,7 +301,7 @@ const FilterSidebar = ({ filters, onFiltersChange, flights }: FilterSidebarProps
               step={1}
               className="w-full"
             />
-            <div className="flex justify-between text-sm text-gray-500 mt-2">
+            <div className="flex justify-between text-sm text-gray-500">
               <span>2h</span>
               <span className="font-medium text-blue-600">
                 Up to {filters.maxDuration}h
@@ -204,6 +309,37 @@ const FilterSidebar = ({ filters, onFiltersChange, flights }: FilterSidebarProps
               <span>24h+</span>
             </div>
           </div>
+        </FilterSection>
+      </div>
+
+      {/* Quick Filters */}
+      <div className="mt-6 pt-4 border-t">
+        <h4 className="text-sm font-medium text-gray-700 mb-3">Quick Filters</h4>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleStopsChange([0])}
+            className={`text-xs ${filters.maxStops === 0 ? 'bg-blue-50 border-blue-200' : ''}`}
+          >
+            Direct Only
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleDurationChange([8])}
+            className={`text-xs ${filters.maxDuration <= 8 ? 'bg-blue-50 border-blue-200' : ''}`}
+          >
+            Under 8h
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePriceChange([Math.floor(priceRange.max * 0.7)])}
+            className={`text-xs ${filters.maxPrice <= priceRange.max * 0.7 ? 'bg-blue-50 border-blue-200' : ''}`}
+          >
+            Budget Friendly
+          </Button>
         </div>
       </div>
     </Card>
