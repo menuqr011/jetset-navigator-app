@@ -1,16 +1,18 @@
-
 import { Flight } from "@/types/flight";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Clock, Users, Plane, ArrowRight } from "lucide-react";
 import { format } from "date-fns";
+import { useNavigate } from "react-router-dom";
 
 interface FlightCardProps {
   flight: Flight;
 }
 
 const FlightCard = ({ flight }: FlightCardProps) => {
+  const navigate = useNavigate();
+
   const formatTime = (timeString: string) => {
     const date = new Date(`2000-01-01T${timeString}`);
     return format(date, "HH:mm");
@@ -35,6 +37,10 @@ const FlightCard = ({ flight }: FlightCardProps) => {
       case 'premium': return 'bg-green-100 text-green-800 border-green-200';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
+  };
+
+  const handleBookNow = () => {
+    navigate("/checkout", { state: { flight } });
   };
 
   return (
@@ -117,7 +123,10 @@ const FlightCard = ({ flight }: FlightCardProps) => {
           </div>
           <div className="text-sm text-gray-500 mb-4">per person</div>
           
-          <Button className="w-full lg:w-auto bg-gradient-to-r from-blue-600 to-sky-600 hover:from-blue-700 hover:to-sky-700 text-white font-semibold px-6 py-2 rounded-lg shadow-md transition-all duration-200 transform hover:scale-105">
+          <Button 
+            onClick={handleBookNow}
+            className="w-full lg:w-auto bg-gradient-to-r from-blue-600 to-sky-600 hover:from-blue-700 hover:to-sky-700 text-white font-semibold px-6 py-2 rounded-lg shadow-md transition-all duration-200 transform hover:scale-105"
+          >
             <div className="flex items-center gap-2">
               Book Now
               <ArrowRight className="w-4 h-4" />
