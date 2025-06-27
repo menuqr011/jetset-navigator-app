@@ -147,25 +147,6 @@ class AmadeusAPIService {
   }, credentials: AmadeusCredentials): Promise<AmadeusSearchResponse> {
     const token = await this.getAccessToken(credentials);
 
-    // Map our travel class values to Amadeus API expected values
-    const mapTravelClass = (travelClass?: string): string => {
-      if (!travelClass) return 'ECONOMY';
-      
-      switch (travelClass.toLowerCase()) {
-        case 'economy':
-          return 'ECONOMY';
-        case 'premium':
-        case 'premium_economy':
-          return 'PREMIUM_ECONOMY';
-        case 'business':
-          return 'BUSINESS';
-        case 'first':
-          return 'FIRST';
-        default:
-          return 'ECONOMY';
-      }
-    };
-
     const queryParams = new URLSearchParams({
       originLocationCode: searchParams.originLocationCode,
       destinationLocationCode: searchParams.destinationLocationCode,
@@ -184,10 +165,8 @@ class AmadeusAPIService {
       queryParams.append('infants', searchParams.infants.toString());
     }
     if (searchParams.travelClass) {
-      queryParams.append('travelClass', mapTravelClass(searchParams.travelClass));
+      queryParams.append('travelClass', searchParams.travelClass.toUpperCase());
     }
-
-    console.log('Final query params:', queryParams.toString());
 
     const response = await fetch(`${AMADEUS_BASE_URL}/v2/shopping/flight-offers?${queryParams}`, {
       headers: {
@@ -197,9 +176,7 @@ class AmadeusAPIService {
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      console.error('Amadeus API Error:', errorData);
-      throw new Error(`Flight search failed: ${response.statusText} - ${JSON.stringify(errorData)}`);
+      throw new Error(`Flight search failed: ${response.statusText}`);
     }
 
     return response.json();
