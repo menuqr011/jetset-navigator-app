@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import SearchForm from "@/components/SearchForm";
 import FlightResults from "@/components/FlightResults";
@@ -162,74 +163,75 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-sky-50">
-      {/* Enhanced Header */}
-      <header className="bg-white/95 backdrop-blur-md border-b border-blue-100 sticky top-0 z-50 shadow-sm">
+      {/* Header */}
+      <header className="bg-white/95 backdrop-blur-sm border-b border-blue-100 sticky top-0 z-50 shadow-sm">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-3 bg-gradient-to-br from-blue-600 to-sky-600 rounded-xl shadow-lg">
-                <Plane className="w-7 h-7 text-white" />
+              <div className="p-2 bg-gradient-to-br from-blue-600 to-sky-600 rounded-lg shadow-md">
+                <Plane className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-sky-600 bg-clip-text text-transparent">
+                <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-sky-600 bg-clip-text text-transparent">
                   JetSet Navigator
                 </h1>
-                <p className="text-sm text-gray-500">Find your perfect flight</p>
+                <p className="text-xs text-gray-500">Find your perfect flight</p>
               </div>
             </div>
             
             <Button
               variant="outline"
+              size="sm"
               onClick={() => setShowCredentialsModal(true)}
               className="flex items-center gap-2 hover:bg-blue-50 transition-colors"
             >
               <Settings className="w-4 h-4" />
               API Settings
-              {credentials && <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>}
+              {credentials && <span className="w-2 h-2 bg-green-500 rounded-full"></span>}
             </Button>
           </div>
         </div>
       </header>
 
-      {/* Enhanced Hero Section */}
-      <section className="container mx-auto px-4 py-12">
-        <div className="text-center mb-12">
-          <h2 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-            Find Your Perfect
-            <span className="block bg-gradient-to-r from-blue-600 to-sky-600 bg-clip-text text-transparent">
-              Flight Deal
-            </span>
-          </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            Search real-time flights using Amadeus API and compare prices from hundreds of airlines. 
-            Book with confidence and save on your next adventure.
-          </p>
-        </div>
+      {/* Main Content */}
+      <main className="container mx-auto px-4 py-8">
+        {/* Hero Section */}
+        {!hasSearched && (
+          <div className="text-center mb-12">
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 leading-tight">
+              Find Your Perfect
+              <span className="block bg-gradient-to-r from-blue-600 to-sky-600 bg-clip-text text-transparent">
+                Flight Deal
+              </span>
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-8">
+              Search real-time flights using Amadeus API and compare prices from hundreds of airlines worldwide.
+            </p>
+          </div>
+        )}
 
-        {/* Enhanced Features Grid */}
+        {/* Features Grid */}
         {!hasSearched && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
             {features.map((feature, index) => (
-              <Card key={index} className="p-6 text-center hover:shadow-lg transition-all duration-300 border-0 bg-white/80 backdrop-blur-sm">
+              <Card key={index} className="p-6 text-center hover:shadow-lg transition-shadow duration-300 border-0 bg-white/80">
                 <div className="inline-flex items-center justify-center w-12 h-12 bg-gray-50 rounded-lg mb-4">
                   {feature.icon}
                 </div>
-                <h3 className="font-semibold text-gray-800 mb-2">{feature.title}</h3>
-                <p className="text-sm text-gray-600">{feature.description}</p>
+                <h3 className="font-semibold text-gray-800 mb-2 text-sm">{feature.title}</h3>
+                <p className="text-xs text-gray-600">{feature.description}</p>
               </Card>
             ))}
           </div>
         )}
 
-        {/* Enhanced Search Form */}
-        <div className="max-w-6xl mx-auto mb-8">
+        {/* Search Form */}
+        <div className="max-w-5xl mx-auto mb-8">
           <SearchForm onSearch={handleSearch} isSearching={isSearching} />
         </div>
-      </section>
 
-      {/* Results Section */}
-      {hasSearched && (
-        <section className="container mx-auto px-4 pb-12">
+        {/* Results Section */}
+        {hasSearched && (
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Filters Sidebar */}
             <div className="lg:w-80 flex-shrink-0">
@@ -250,8 +252,8 @@ const Index = () => {
               />
             </div>
           </div>
-        </section>
-      )}
+        )}
+      </main>
 
       {/* Credentials Modal */}
       <CredentialsModal

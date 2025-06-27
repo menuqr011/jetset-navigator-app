@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -55,31 +56,30 @@ const SearchForm = ({ onSearch, isSearching }: SearchFormProps) => {
   };
 
   return (
-    <Card className="p-8 bg-white/95 backdrop-blur-md shadow-2xl border-0 rounded-2xl">
-      <form onSubmit={handleSubmit} className="space-y-8">
-        {/* Enhanced Trip Type and Class Selection */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <Card className="p-6 bg-white/95 backdrop-blur-sm shadow-xl border-0 rounded-xl">
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Trip Type and Class Selection */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="trip-type" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+            <Label htmlFor="trip-type" className="text-sm font-medium text-gray-700 flex items-center gap-2">
               <MapPin className="w-4 h-4" />
               Trip Type
             </Label>
             <Select value={tripType} onValueChange={setTripType}>
-              <SelectTrigger className="h-12 bg-white/50 border-gray-200 hover:border-blue-300 transition-colors">
+              <SelectTrigger className="h-11 bg-white border-gray-200">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="round-trip">🔄 Round Trip</SelectItem>
                 <SelectItem value="one-way">➡️ One Way</SelectItem>
-                <SelectItem value="multi-city">🌍 Multi City</SelectItem>
               </SelectContent>
             </Select>
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="class" className="text-sm font-semibold text-gray-700">Class</Label>
+            <Label htmlFor="class" className="text-sm font-medium text-gray-700">Class</Label>
             <Select value={flightClass} onValueChange={setFlightClass}>
-              <SelectTrigger className="h-12 bg-white/50 border-gray-200 hover:border-blue-300 transition-colors">
+              <SelectTrigger className="h-11 bg-white border-gray-200">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -92,21 +92,18 @@ const SearchForm = ({ onSearch, isSearching }: SearchFormProps) => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="passengers" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+            <Label htmlFor="passengers" className="text-sm font-medium text-gray-700 flex items-center gap-2">
               <Users className="w-4 h-4" />
               Passengers
             </Label>
             <Select value={passengers} onValueChange={setPassengers}>
-              <SelectTrigger className="h-12 bg-white/50 border-gray-200 hover:border-blue-300 transition-colors">
+              <SelectTrigger className="h-11 bg-white border-gray-200">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 {[1,2,3,4,5,6,7,8,9].map(num => (
                   <SelectItem key={num} value={num.toString()}>
-                    <div className="flex items-center gap-2">
-                      <Users className="w-4 h-4" />
-                      {num} {num === 1 ? 'Passenger' : 'Passengers'}
-                    </div>
+                    {num} {num === 1 ? 'Passenger' : 'Passengers'}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -114,9 +111,9 @@ const SearchForm = ({ onSearch, isSearching }: SearchFormProps) => {
           </div>
         </div>
 
-        {/* Enhanced Location and Date Selection */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {/* Origin with enhanced styling */}
+        {/* Location and Date Selection */}
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 items-end">
+          {/* Origin */}
           <div className="space-y-2">
             <AirportAutocomplete
               label="From"
@@ -129,20 +126,20 @@ const SearchForm = ({ onSearch, isSearching }: SearchFormProps) => {
           </div>
 
           {/* Swap Button */}
-          <div className="flex items-end justify-center">
+          <div className="flex justify-center">
             <Button
               type="button"
               variant="outline"
               size="icon"
               onClick={swapLocations}
-              className="mb-2 h-12 w-12 rounded-full bg-blue-50 border-blue-200 hover:bg-blue-100 hover:border-blue-300 transition-all duration-200"
+              className="h-11 w-11 rounded-full bg-blue-50 border-blue-200 hover:bg-blue-100"
             >
-              <ArrowLeftRight className="w-5 h-5 text-blue-600" />
+              <ArrowLeftRight className="w-4 h-4 text-blue-600" />
             </Button>
           </div>
 
           {/* Destination */}
-          <div className="space-y-2 md:col-start-2 lg:col-start-2">
+          <div className="space-y-2">
             <AirportAutocomplete
               label="To"
               placeholder="Destination city"
@@ -155,18 +152,18 @@ const SearchForm = ({ onSearch, isSearching }: SearchFormProps) => {
 
           {/* Departure Date */}
           <div className="space-y-2">
-            <Label className="text-sm font-semibold text-gray-700">Departure</Label>
+            <Label className="text-sm font-medium text-gray-700">Departure</Label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
                   className={cn(
-                    "w-full h-12 justify-start text-left font-normal bg-white/50 border-gray-200 hover:border-blue-300 transition-colors",
+                    "w-full h-11 justify-start text-left font-normal bg-white border-gray-200",
                     !departureDate && "text-muted-foreground"
                   )}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4 text-blue-600" />
-                  {departureDate ? format(departureDate, "MMM dd, yyyy") : "Select date"}
+                  {departureDate ? format(departureDate, "MMM dd") : "Select"}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
@@ -176,7 +173,6 @@ const SearchForm = ({ onSearch, isSearching }: SearchFormProps) => {
                   onSelect={setDepartureDate}
                   disabled={(date) => date < new Date()}
                   initialFocus
-                  className="p-3 pointer-events-auto"
                 />
               </PopoverContent>
             </Popover>
@@ -185,18 +181,18 @@ const SearchForm = ({ onSearch, isSearching }: SearchFormProps) => {
           {/* Return Date */}
           {tripType === 'round-trip' && (
             <div className="space-y-2">
-              <Label className="text-sm font-semibold text-gray-700">Return</Label>
+              <Label className="text-sm font-medium text-gray-700">Return</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
                     className={cn(
-                      "w-full h-12 justify-start text-left font-normal bg-white/50 border-gray-200 hover:border-blue-300 transition-colors",
+                      "w-full h-11 justify-start text-left font-normal bg-white border-gray-200",
                       !returnDate && "text-muted-foreground"
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4 text-blue-600" />
-                    {returnDate ? format(returnDate, "MMM dd, yyyy") : "Select date"}
+                    {returnDate ? format(returnDate, "MMM dd") : "Select"}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
@@ -206,7 +202,6 @@ const SearchForm = ({ onSearch, isSearching }: SearchFormProps) => {
                     onSelect={setReturnDate}
                     disabled={(date) => date < (departureDate || new Date())}
                     initialFocus
-                    className="p-3 pointer-events-auto"
                   />
                 </PopoverContent>
               </Popover>
@@ -214,10 +209,10 @@ const SearchForm = ({ onSearch, isSearching }: SearchFormProps) => {
           )}
         </div>
 
-        {/* Enhanced Popular Destinations */}
-        <div className="space-y-4">
-          <Label className="text-sm font-semibold text-gray-700">✈️ Popular Destinations</Label>
-          <div className="flex flex-wrap gap-3">
+        {/* Popular Destinations */}
+        <div className="space-y-3">
+          <Label className="text-sm font-medium text-gray-700">✈️ Popular Destinations</Label>
+          <div className="flex flex-wrap gap-2">
             {popularCities.map((city) => (
               <Button
                 key={city.code}
@@ -225,29 +220,29 @@ const SearchForm = ({ onSearch, isSearching }: SearchFormProps) => {
                 variant="outline"
                 size="sm"
                 onClick={() => setDestination(city.name)}
-                className="text-sm hover:bg-blue-50 hover:border-blue-200 hover:scale-105 transition-all duration-200 bg-white/50"
+                className="text-xs hover:bg-blue-50 hover:border-blue-200 transition-colors"
               >
-                <span className="mr-2">{city.flag}</span>
-                {city.code} - {city.name}
+                <span className="mr-1">{city.flag}</span>
+                {city.name}
               </Button>
             ))}
           </div>
         </div>
 
-        {/* Enhanced Search Button */}
+        {/* Search Button */}
         <Button 
           type="submit" 
-          className="w-full h-14 bg-gradient-to-r from-blue-600 to-sky-600 hover:from-blue-700 hover:to-sky-700 text-white font-bold text-lg rounded-xl shadow-lg transition-all duration-300 transform hover:scale-[1.02] hover:shadow-xl"
+          className="w-full h-12 bg-gradient-to-r from-blue-600 to-sky-600 hover:from-blue-700 hover:to-sky-700 text-white font-semibold text-base rounded-lg shadow-lg transition-all duration-300"
           disabled={isSearching || !origin || !destination || !departureDate}
         >
           {isSearching ? (
-            <div className="flex items-center gap-3">
-              <div className="w-5 h-5 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
               Searching Flights...
             </div>
           ) : (
-            <div className="flex items-center gap-3">
-              <Search className="w-6 h-6" />
+            <div className="flex items-center gap-2">
+              <Search className="w-5 h-5" />
               Search Flights
             </div>
           )}
