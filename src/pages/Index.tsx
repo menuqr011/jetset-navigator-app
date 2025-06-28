@@ -22,7 +22,7 @@ const Index = () => {
     return saved ? JSON.parse(saved) : null;
   });
   const [filters, setFilters] = useState<SearchFilters>({
-    maxPrice: 2000,
+    maxPrice: 200000, // Default to ₹2,00,000 in INR
     airlines: [],
     maxStops: 3,
     maxDuration: 24,
@@ -95,6 +95,12 @@ const Index = () => {
       const transformedFlights = transformAmadeusToFlights(amadeusResponse);
       
       setFlights(transformedFlights);
+      
+      // Update max price filter to the actual maximum price from search results
+      if (transformedFlights.length > 0) {
+        const maxPrice = Math.max(...transformedFlights.map(f => f.price));
+        setFilters(prev => ({ ...prev, maxPrice }));
+      }
       
       toast({
         title: "Flights found!",

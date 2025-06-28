@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Flight, SearchFilters } from "@/types/flight";
 import { Card } from "@/components/ui/card";
@@ -12,6 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Filter, RotateCcw, ChevronDown, Clock, Plane, DollarSign, Users } from "lucide-react";
+import { formatInrCurrency } from "@/utils/currencyConverter";
 
 interface FilterSidebarProps {
   filters: SearchFilters;
@@ -46,7 +46,7 @@ const FilterSidebar = ({ filters, onFiltersChange, flights }: FilterSidebarProps
   const priceRange = flights.length > 0 ? {
     min: Math.min(...flights.map(f => f.price)),
     max: Math.max(...flights.map(f => f.price))
-  } : { min: 0, max: 2000 };
+  } : { min: 0, max: 200000 }; // Default to ₹2,00,000 in INR
 
   // Get departure time ranges
   const departureTimeRanges = [
@@ -175,15 +175,15 @@ const FilterSidebar = ({ filters, onFiltersChange, flights }: FilterSidebarProps
               onValueChange={handlePriceChange}
               max={priceRange.max}
               min={priceRange.min}
-              step={50}
+              step={1000}
               className="w-full"
             />
             <div className="flex justify-between text-sm text-gray-500">
-              <span>${priceRange.min.toLocaleString()}</span>
+              <span>{formatInrCurrency(priceRange.min)}</span>
               <span className="font-medium text-blue-600">
-                Up to ${filters.maxPrice.toLocaleString()}
+                Up to {formatInrCurrency(filters.maxPrice)}
               </span>
-              <span>${priceRange.max.toLocaleString()}</span>
+              <span>{formatInrCurrency(priceRange.max)}</span>
             </div>
           </div>
         </FilterSection>
@@ -228,7 +228,7 @@ const FilterSidebar = ({ filters, onFiltersChange, flights }: FilterSidebarProps
                         {airline.count} flight{airline.count !== 1 ? 's' : ''}
                       </div>
                       <div className="text-xs font-medium text-green-600">
-                        from ${airline.minPrice.toLocaleString()}
+                        from {formatInrCurrency(airline.minPrice)}
                       </div>
                     </div>
                   </div>
