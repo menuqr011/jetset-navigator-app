@@ -1,4 +1,3 @@
-
 interface AmadeusCredentials {
   apiKey: string;
   apiSecret: string;
@@ -134,6 +133,19 @@ class AmadeusAPIService {
     return this.accessToken;
   }
 
+  private mapTravelClass(internalClass?: string): string | undefined {
+    if (!internalClass) return undefined;
+    
+    const classMap: Record<string, string> = {
+      'economy': 'ECONOMY',
+      'premium': 'PREMIUM_ECONOMY',
+      'business': 'BUSINESS',
+      'first': 'FIRST'
+    };
+    
+    return classMap[internalClass.toLowerCase()];
+  }
+
   async searchFlights(searchParams: {
     originLocationCode: string;
     destinationLocationCode: string;
@@ -165,8 +177,13 @@ class AmadeusAPIService {
       queryParams.append('infants', searchParams.infants.toString());
     }
     if (searchParams.travelClass) {
-      queryParams.append('travelClass', searchParams.travelClass.toUpperCase());
+      const mappedClass = this.mapTravelClass(searchParams.travelClass);
+      if (mappedClass) {
+        queryParams.append('travelClass', mappedClass);
+      }
     }
+
+    console.log('Final API URL:', `${AMADEUS_BASE_URL}/v2/shopping/flight-offers?${queryParams}`);
 
     const response = await fetch(`${AMADEUS_BASE_URL}/v2/shopping/flight-offers?${queryParams}`, {
       headers: {
