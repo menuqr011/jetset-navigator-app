@@ -101,6 +101,8 @@ interface AmadeusSearchResponse {
 
 const AMADEUS_BASE_URL = 'https://test.api.amadeus.com';
 
+import { convertUsdToInr } from "@/utils/currencyConverter";
+
 class AmadeusAPIService {
   private accessToken: string | null = null;
   private tokenExpiry: number = 0;
@@ -196,7 +198,23 @@ class AmadeusAPIService {
       throw new Error(`Flight search failed: ${response.statusText}`);
     }
 
-    return response.json();
+    const data: AmadeusSearchResponse = await response.json();
+    
+    // Convert USD prices to INR
+    if (data.data) {
+      data.data = data.data.map(flight => ({
+        ...flight,
+        price: {
+          ...flight.price,
+          currency: 'INR',
+          total: convertUsdToInr(parseFloat(flight.price.total)).toString(),
+          base: convertUsdToInr(parseFloat(flight.price.base)).toString(),
+          grandTotal: convertUsdToInr(parseFloat(flight.price.grandTotal)).toString(),
+        }
+      }));
+    }
+
+    return data;
   }
 }
 

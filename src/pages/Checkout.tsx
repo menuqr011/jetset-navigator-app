@@ -120,8 +120,8 @@ const Checkout = () => {
 
     const options = {
       key: "rzp_test_g5lLjY6DP6TbUZ",
-      amount: Math.round(flight.price * 100), // Amount in paisa
-      currency: "USD",
+      amount: Math.round(flight.price * 100), // Amount in paisa (INR)
+      currency: "INR",
       name: "Flight Booking System",
       description: `Flight from ${flight.origin} to ${flight.destination}`,
       image: "/favicon.ico",
@@ -162,8 +162,16 @@ const Checkout = () => {
     return null;
   }
 
-  const taxes = Math.round(flight.price * 0.12);
+  const taxes = Math.round(flight.price * 0.18); // GST rate for India
   const total = flight.price + taxes;
+
+  const formatInrCurrency = (amount: number): string => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-sky-50">
@@ -345,19 +353,19 @@ const Checkout = () => {
               <div className="space-y-4 mb-6">
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Base Fare</span>
-                  <span className="font-semibold">${flight.price.toLocaleString()}</span>
+                  <span className="font-semibold">{formatInrCurrency(flight.price)}</span>
                 </div>
                 
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Taxes & Fees</span>
-                  <span className="font-semibold">${taxes.toLocaleString()}</span>
+                  <span className="text-gray-600">Taxes & GST (18%)</span>
+                  <span className="font-semibold">{formatInrCurrency(taxes)}</span>
                 </div>
                 
                 <Separator />
                 
                 <div className="flex justify-between items-center text-lg">
                   <span className="font-semibold">Total Amount</span>
-                  <span className="font-bold text-blue-600">${total.toLocaleString()}</span>
+                  <span className="font-bold text-blue-600">{formatInrCurrency(total)}</span>
                 </div>
               </div>
 
@@ -374,7 +382,7 @@ const Checkout = () => {
                 ) : (
                   <div className="flex items-center gap-2">
                     <CreditCard className="w-5 h-5" />
-                    Pay ${total.toLocaleString()}
+                    Pay {formatInrCurrency(total)}
                   </div>
                 )}
               </Button>

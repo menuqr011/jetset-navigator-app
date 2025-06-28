@@ -49,6 +49,14 @@ const OrderConfirmation = () => {
     const bookingRef = generateBookingReference();
     const currentDate = new Date().toLocaleDateString();
     
+    const formatInrCurrency = (amount: number): string => {
+      return new Intl.NumberFormat('en-IN', {
+        style: 'currency',
+        currency: 'INR',
+        maximumFractionDigits: 0,
+      }).format(amount);
+    };
+    
     return `
 ELECTRONIC TICKET
 ═══════════════════════════════════════
@@ -85,9 +93,9 @@ Stops: ${flight.stops === 0 ? 'Direct Flight' : `${flight.stops} stop(s)`}
 
 PRICING BREAKDOWN
 ───────────────────────────────────────
-Base Fare: $${flight.price.toLocaleString()}
-Taxes & Fees: $${Math.round(flight.price * 0.12).toLocaleString()}
-Total Paid: $${(flight.price + Math.round(flight.price * 0.12)).toLocaleString()}
+Base Fare: ${formatInrCurrency(flight.price)}
+Taxes & GST: ${formatInrCurrency(Math.round(flight.price * 0.18))}
+Total Paid: ${formatInrCurrency(flight.price + Math.round(flight.price * 0.18))}
 
 IMPORTANT INFORMATION
 ───────────────────────────────────────
@@ -168,8 +176,16 @@ For support, contact us at support@flightbooking.com
   }
 
   const bookingRef = generateBookingReference();
-  const taxes = Math.round(flight.price * 0.12);
+  const taxes = Math.round(flight.price * 0.18); // GST for India
   const total = flight.price + taxes;
+
+  const formatInrCurrency = (amount: number): string => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50">
@@ -344,19 +360,19 @@ For support, contact us at support@flightbooking.com
 
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Base Fare</span>
-                  <span className="font-semibold">${flight.price.toLocaleString()}</span>
+                  <span className="font-semibold">{formatInrCurrency(flight.price)}</span>
                 </div>
 
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Taxes & Fees</span>
-                  <span className="font-semibold">${taxes.toLocaleString()}</span>
+                  <span className="text-gray-600">Taxes & GST</span>
+                  <span className="font-semibold">{formatInrCurrency(taxes)}</span>
                 </div>
                 
                 <Separator />
                 
                 <div className="flex justify-between items-center text-xl">
                   <span className="font-bold">Total Paid</span>
-                  <span className="font-bold text-green-600">${total.toLocaleString()}</span>
+                  <span className="font-bold text-green-600">{formatInrCurrency(total)}</span>
                 </div>
               </div>
 

@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Clock, Users, Plane, ArrowRight, Wifi, Coffee, Tv } from "lucide-react";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
+import { formatInrCurrency } from "@/utils/currencyConverter";
 
 interface FlightCardProps {
   flight: Flight;
@@ -159,7 +160,7 @@ const FlightCard = ({ flight }: FlightCardProps) => {
         <div className="lg:w-56 text-center lg:text-right">
           <div className="mb-4">
             <div className="text-4xl font-bold text-gray-800 mb-1">
-              ${flight.price.toLocaleString()}
+              {formatInrCurrency(flight.price)}
             </div>
             <div className="text-sm text-gray-500">per person</div>
             <div className="text-xs text-green-600 font-medium mt-1">
