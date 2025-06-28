@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
@@ -118,9 +117,13 @@ const Checkout = () => {
 
     setIsProcessing(true);
 
+    // Calculate total including taxes for payment
+    const taxes = Math.round(flight.price * 0.18);
+    const totalAmount = flight.price + taxes;
+
     const options = {
       key: "rzp_test_g5lLjY6DP6TbUZ",
-      amount: Math.round(flight.price * 100), // Amount in paisa (INR)
+      amount: Math.round(totalAmount * 100), // Total amount including taxes in paisa (INR)
       currency: "INR",
       name: "Flight Booking System",
       description: `Flight from ${flight.origin} to ${flight.destination}`,
