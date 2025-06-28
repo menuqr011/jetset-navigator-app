@@ -3,7 +3,9 @@
 const USD_TO_INR_RATE = 83.5;
 
 export const convertUsdToInr = (usdAmount: number): number => {
-  return Math.round(usdAmount * USD_TO_INR_RATE);
+  const convertedAmount = Math.round(usdAmount * USD_TO_INR_RATE);
+  console.log(`Converting USD ${usdAmount} to INR ${convertedAmount} at rate ${USD_TO_INR_RATE}`);
+  return convertedAmount;
 };
 
 export const formatInrCurrency = (amount: number): string => {

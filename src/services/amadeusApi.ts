@@ -202,16 +202,28 @@ class AmadeusAPIService {
     
     // Convert USD prices to INR
     if (data.data) {
-      data.data = data.data.map(flight => ({
-        ...flight,
-        price: {
-          ...flight.price,
-          currency: 'INR',
-          total: convertUsdToInr(parseFloat(flight.price.total)).toString(),
-          base: convertUsdToInr(parseFloat(flight.price.base)).toString(),
-          grandTotal: convertUsdToInr(parseFloat(flight.price.grandTotal)).toString(),
-        }
-      }));
+      console.log('Converting flight prices from USD to INR...');
+      data.data = data.data.map((flight, index) => {
+        const originalPrice = parseFloat(flight.price.total);
+        const originalBase = parseFloat(flight.price.base);
+        const originalGrandTotal = parseFloat(flight.price.grandTotal);
+        
+        console.log(`Flight ${index + 1}: Original USD price: ${originalPrice}`);
+        
+        const convertedFlight = {
+          ...flight,
+          price: {
+            ...flight.price,
+            currency: 'INR',
+            total: convertUsdToInr(originalPrice).toString(),
+            base: convertUsdToInr(originalBase).toString(),
+            grandTotal: convertUsdToInr(originalGrandTotal).toString(),
+          }
+        };
+        
+        console.log(`Flight ${index + 1}: Converted INR price: ${convertedFlight.price.total}`);
+        return convertedFlight;
+      });
     }
 
     return data;
